@@ -2,6 +2,7 @@ import numpy as np
 from scipy.stats import mode
 from sklearn.metrics import accuracy_score
 #se importan todos los estimadores
+from heterogeneos import Heterogeneo
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
@@ -81,11 +82,13 @@ estimadores = [
     ('gnb', GaussianNB())
 ]
 X,y = load_creado(Datasets()[0])
-fit(estimadores, X, y)
+het = Heterogeneo(estimadores)
+het.fit(X,y)
+y_pred_het = het.predict(X)
 bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X,y)
 y_pred_bag = bag.predict(X)
 ada = AdaBoostClassifier(n_estimators=100, random_state=True).fit(X,y)
 y_pred_ada = ada.predict(X)
-print("Heterogeneo: ",accuracy_score(y,predict(X, estimadores)))
+print("Heterogeneo: ",accuracy_score(y,y_pred_het))
 print("Homogeneo: ",accuracy_score(y, y_pred_bag))
 print("Boost: ",accuracy_score(y, y_pred_ada))
