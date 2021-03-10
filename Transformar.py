@@ -82,8 +82,7 @@ estimadores = [
     ('gnb', GaussianNB())
 ]
 X,y = load_creado(Datasets()[0])
-het = Heterogeneo(estimadores)
-het.fit(X,y)
+het = Heterogeneo(estimadores).fit(X,y)
 y_pred_het = het.predict(X)
 bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X,y)
 y_pred_bag = bag.predict(X)
