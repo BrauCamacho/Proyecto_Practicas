@@ -17,9 +17,11 @@ from sklearn.model_selection import train_test_split
 
 #esta clase premite almacenar los datasets, con la ubicación de la clase, como una lista
 class datas:
-    def __init__(self, dir, clas):
+    def __init__(self, dir, clas,name):
         self.dir = dir
         self.clas = clas
+        self.name = name
+
     
 #entrena todos los estimadores
 def fit(estimadores, X,y):
@@ -38,7 +40,6 @@ def ensambles_homogeneos(Estimador_Base, cantidad):
 def predict(X, estimadores):
     n_estimadores = len(estimadores)
     n_samples = len(X)
-    
     y = np.zeros((n_samples, n_estimadores))
     for i,(modelo,estimador) in enumerate(estimadores):
         y[:, i] = estimador.predict(X)
@@ -57,37 +58,39 @@ def load_creado(datos):
 #todos los datasets, con la direccion de la clase
 def Datasets():
     datasets =[]
-    datasets.append(datas("Datasets/bupa.data",6))
-    datasets.append(datas("Datasets/diabetic_retinopathy_debrecen.txt", 0))
-    datasets.append(datas("Datasets/fertility_Diagnosis2.txt", 9))
-    datasets.append(datas("Datasets/haberman.data", 3))
-    datasets.append(datas("Datasets/heart.txt", 13))
-    datasets.append(datas("Datasets/LSTV", 309))
-    datasets.append(datas("Datasets/TroraricSugery.txt",16))
-    datasets.append(datas("Datasets/vertebral_column.txt",6))
-    datasets.append(datas("Datasets/train_data.txt",28))
-    datasets.append(datas("Datasets/wdbc.txt",1))
-    datasets.append(datas("Datasets/wdbcOriginal.txt",1))
-    datasets.append(datas("Datasets/wdbcPredictions.txt",1))
-    datasets.append(datas("Datasets/chronic_kidney_disease.txt",24))
-    datasets.append(datas("Datasets/parkinsons.data",0))
+    datasets.append(datas("Datasets/bupa.data",6,"Liver disorders"))
+    datasets.append(datas("Datasets/diabetic_retinopathy_debrecen.txt", 0,"Diabetic retinopathy from U. of Debrecen"))
+    datasets.append(datas("Datasets/fertility_Diagnosis2.txt", 9,"Fertility"))
+    datasets.append(datas("Datasets/haberman.data", 3,"Haberman’s survival after surgery for breast cancer"))
+    datasets.append(datas("Datasets/heart.txt", 13,"Statlog heart disease"))
+    datasets.append(datas("Datasets/LSTV.txt", 310,"LSVT voice rehabilitation"))
+    datasets.append(datas("Datasets/ThoraricSurgery.txt",16,"Thoracic surgery survival after surgery for lung cancer"))
+    datasets.append(datas("Datasets/vertebral_column.txt",6,"Vertebral column"))
+    datasets.append(datas("Datasets/train_data.txt",28,"Parkinson speech"))
+    datasets.append(datas("Datasets/wdbc.txt",1,"Breast cancer Wisconsin diagnostic"))
+    datasets.append(datas("Datasets/wdbcOriginal.txt",1,"Breast cancer Wisconsin original"))
+    datasets.append(datas("Datasets/wdbcPredictions.txt",1,"Breast cancer Wisconsin prognostic"))
+    datasets.append(datas("Datasets/chronic_kidney_disease.txt",24,"Chronic kidney disease"))
+    datasets.append(datas("Datasets/parkinsons.data",0, "Oxford Parkinson’s disease detection"))
     return datasets
 
 #Carga todos los estimadores, en una lista
 estimadores = [
     ('dt',DecisionTreeClassifier(max_depth=5)),
     ('svm', SVC(gamma=1.0, C=1.0, probability=True)),
-    ('gp', GaussianProcessClassifier(RBF(1.0))),
+    #('gp', GaussianProcessClassifier(RBF(1.0))),
     ('3nn',KNeighborsClassifier(n_neighbors=3)),
     ('gnb', GaussianNB())
 ]
-X,y = load_creado(Datasets()[0])
-het = Heterogeneo(estimadores).fit(X,y)
-y_pred_het = het.predict(X)
-bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X,y)
-y_pred_bag = bag.predict(X)
-ada = AdaBoostClassifier(n_estimators=100, random_state=True).fit(X,y)
-y_pred_ada = ada.predict(X)
-print("Heterogeneo: ",accuracy_score(y,y_pred_het))
-print("Homogeneo: ",accuracy_score(y, y_pred_bag))
-print("Boost: ",accuracy_score(y, y_pred_ada))
+for Dataset in Datasets():
+    X,y = load_creado(Dataset)
+    het = Heterogeneo(estimadores).fit(X,y)
+    y_pred_het = het.predict(X)
+    bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X,y)
+    y_pred_bag = bag.predict(X)
+    ada = AdaBoostClassifier(n_estimators=100, random_state=True).fit(X,y)
+    y_pred_ada = ada.predict(X)
+    print("---- Resultados de presicion para el dataset : ",Dataset.name," --------" )
+    print("Estimador : Bagging, Presicion: ",accuracy_score(y, y_pred_bag))
+    print("Estimador : Adaboost, Presicion: ",accuracy_score(y, y_pred_ada))
+    print("Estimador : Heterogeneo, Presicion: ",accuracy_score(y, y_pred_het))
