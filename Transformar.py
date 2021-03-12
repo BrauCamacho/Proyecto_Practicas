@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import mode
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import KFold
 #se importan todos los estimadores
 from heterogeneos import Heterogeneo
 from sklearn.tree import DecisionTreeClassifier
@@ -23,36 +24,17 @@ class datas:
         self.name = name
 
     
-#entrena todos los estimadores
-def fit(estimadores, X,y):
-    for modelo, estimador in estimadores:
-        estimador.fit(X,y)
-    return estimadores
-
 #crea los ensambles homogeneos
 def ensambles_homogeneos(Estimador_Base, cantidad):
     estimadores = [Estimador_Base for i in range(cantidad)]
     return estimadores
-
-
-    
-#genera una prediccion individual por cada clasificador
-def predict(X, estimadores):
-    n_estimadores = len(estimadores)
-    n_samples = len(X)
-    y = np.zeros((n_samples, n_estimadores))
-    for i,(modelo,estimador) in enumerate(estimadores):
-        y[:, i] = estimador.predict(X)
-    y = mode(y, axis=1)
-    y = [i[0] for i in y[0]]
-    return y
 
 #permite cargar cualquier dataset, con la estructura de sklearn
 def load_creado(datos):
     dat = open(datos.dir)
     X = np.array([np.fromstring(i, dtype = float, sep = ',') for i in dat.readlines()])
     y = np.array([i[datos.clas]for i in X])
-    X = [[vector[i] for i in range(len(vector)) if i != datos.clas] for vector in X]
+    X = np.array([[vector[i] for i in range(len(vector)) if i != datos.clas] for vector in X])
     return X,y
 
 #todos los datasets, con la direccion de la clase
@@ -82,15 +64,26 @@ estimadores = [
     ('3nn',KNeighborsClassifier(n_neighbors=3)),
     ('gnb', GaussianNB())
 ]
+kf = KFold(n_splits=10)
 for Dataset in Datasets():
     X,y = load_creado(Dataset)
-    het = Heterogeneo(estimadores).fit(X,y)
-    y_pred_het = het.predict(X)
-    bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X,y)
-    y_pred_bag = bag.predict(X)
-    ada = AdaBoostClassifier(n_estimators=100, random_state=True).fit(X,y)
-    y_pred_ada = ada.predict(X)
+    media_het = 0
+    media_ada = 0
+    media_bag = 0
+    for train_index, test_index in kf.split(X):
+        het = Heterogeneo(estimadores).fit(X[train_index],y[train_index])
+        y_pred_het = het.predict(X[test_index])
+        bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X[train_index],y[train_index])
+        y_pred_bag = bag.predict(X[test_index])
+        ada = AdaBoostClassifier(n_estimators=100, random_state=True).fit(X[train_index],y[train_index])
+        y_pred_ada = ada.predict(X[test_index])
+        media_het+= accuracy_score(y[test_index], y_pred_het)
+        media_ada+= accuracy_score(y[test_index], y_pred_ada)
+        media_bag+= accuracy_score(y[test_index], y_pred_bag)
+    media_het = media_het/10
+    media_ada = media_ada/10
+    media_bag = media_bag/10
     print("---- Resultados de presicion para el dataset : ",Dataset.name," --------" )
-    print("Estimador : Bagging, Presicion: ",accuracy_score(y, y_pred_bag))
-    print("Estimador : Adaboost, Presicion: ",accuracy_score(y, y_pred_ada))
-    print("Estimador : Heterogeneo, Presicion: ",accuracy_score(y, y_pred_het))
+    print("Estimador : Bagging, Presicion: ",media_bag)
+    print("Estimador : Adaboost, Presicion: ",media_ada)
+    print("Estimador : Heterogeneo, Presicion: ",media_het)
