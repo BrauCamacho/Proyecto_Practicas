@@ -11,10 +11,12 @@ from sklearn.gaussian_process.kernels import RBF
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import AdaBoostClassifier
 #sirve para partir los datos entre datos de prueba, y de entrenamiento
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 #esta clase premite almacenar los datasets, con la ubicación de la clase, como una lista
 class datas:
@@ -60,10 +62,9 @@ def Datasets():
 estimadores = [
     ('dt',DecisionTreeClassifier(max_depth=5)),
     ('svm', SVC(gamma=1.0, C=1.0, probability=True)),
-    #('gp', GaussianProcessClassifier(RBF(1.0))),
     ('3nn',KNeighborsClassifier(n_neighbors=3)),
-    ('gnb', GaussianNB())
-]
+    ('gnb', GaussianNB()),
+    ('nn', MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(15,), random_state=1, max_iter=10000))]
 kf = KFold(n_splits=10)
 for Dataset in Datasets():
     X,y = load_creado(Dataset)
@@ -71,7 +72,9 @@ for Dataset in Datasets():
     media_ada = 0
     media_bag = 0
     for train_index, test_index in kf.split(X):
-        het = Heterogeneo(estimadores).fit(X[train_index],y[train_index])
+        scaled = StandardScaler().fit(X[train_index])
+        X_scaled = scaled.transform(X[train_index])
+        het = Heterogeneo(estimadores).fit(X_scaled,y[train_index])
         y_pred_het = het.predict(X[test_index])
         bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X[train_index],y[train_index])
         y_pred_bag = bag.predict(X[test_index])

@@ -1,12 +1,11 @@
-from sklearn.ensemble import AdaBoostClassifier
-from Transformar import datas
-from Transformar import load_creado
+from sklearn.preprocessing import StandardScaler
 from Transformar import Datasets
-from sklearn.metrics import accuracy_score
+from Transformar import load_creado
+from sklearn.neural_network import MLPClassifier
 
-datos = Datasets()
-for datas in datos:
-    X,y = load_creado(datas)
-    ab = AdaBoostClassifier(n_estimators=100, random_state=True).fit(X,y)
-    ypred = ab.predict(X)
-    print(accuracy_score(y , ypred))
+Datas = Datasets()
+for data in Datas:
+    X,y = load_creado(data)
+    scaled = StandardScaler().fit(X)
+    X_scaled = scaled.transform(X)
+    nn = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(15,), random_state=1, max_iter=10000).fit(X_scaled,y)
