@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import mode
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, recall_score, f1_score,precision_score
+
 from sklearn.model_selection import KFold
 #se importan todos los estimadores
 from heterogeneos import Heterogeneo
@@ -17,6 +18,7 @@ from sklearn.ensemble import AdaBoostClassifier
 #sirve para partir los datos entre datos de prueba, y de entrenamiento
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import StratifiedShuffleSplit
 
 #esta clase premite almacenar los datasets, con la ubicación de la clase, como una lista
 class datas:
@@ -66,6 +68,7 @@ estimadores = [
     ('gnb', GaussianNB()),
     ('nn', MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(15,), random_state=1, max_iter=10000))]
 kf = KFold(n_splits=10)
+kf = StratifiedShuffleSplit(n_splits=10, test_size=0.9, random_state=0)
 for Dataset in Datasets():
     X,y = load_creado(Dataset)
     media_het = 0
