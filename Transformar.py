@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import mode
 from sklearn.metrics import accuracy_score, recall_score, f1_score,precision_score
-
+from prueba2 import media_desvia
 from sklearn.model_selection import KFold
 #se importan todos los estimadores
 from heterogeneos import Heterogeneo
@@ -41,6 +41,12 @@ def load_creado(datos):
     X = np.array([[vector[i] for i in range(len(vector)) if i != datos.clas] for vector in X])
     return X,y
 
+def metrics(y_true, y_pred, Lista):
+    Lista[0].append(accuracy_score(y_true, y_pred))
+    Lista[1].append(recall_score(y_true,y_pred, zero_division=0,average="macro"))
+    Lista[2].append(f1_score(y_true,y_pred, zero_division=0, average="macro"))
+    Lista[3].append(precision_score(y_true, y_pred, zero_division=0, average="macro"))
+
 #todos los datasets, con la direccion de la clase
 def Datasets():
     datasets =[]
@@ -65,31 +71,37 @@ estimadores = [
     ('dt',DecisionTreeClassifier(max_depth=5)),
     ('svm', SVC(gamma=1.0, C=1.0, probability=True)),
     ('3nn',KNeighborsClassifier(n_neighbors=3)),
-    ('gnb', GaussianNB()),
-    ('nn', MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(15,), random_state=1, max_iter=10000))]
+    ('gnb', GaussianNB())]
+    
 kf = KFold(n_splits=10)
-kf = StratifiedShuffleSplit(n_splits=10, test_size=0.9, random_state=0)
+#kf = StratifiedShuffleSplit(n_splits=10, test_size=0.9, random_state=1)
 for Dataset in Datasets():
     X,y = load_creado(Dataset)
-    media_het = 0
-    media_ada = 0
-    media_bag = 0
-    for train_index, test_index in kf.split(X):
-        scaled = StandardScaler().fit(X[train_index])
-        X_scaled = scaled.transform(X[train_index])
-        het = Heterogeneo(estimadores).fit(X_scaled,y[train_index])
+    Lista_het = [[],[],[],[]]
+    Lista_homo = [[],[],[],[]]
+    Lista_ada = [[],[],[],[]]
+    Lista_rand = [[],[],[],[]]
+    for train_index, test_index in kf.split(X,y):
+        het = Heterogeneo(estimadores).fit(X[train_index],y[train_index])
         y_pred_het = het.predict(X[test_index])
         bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X[train_index],y[train_index])
         y_pred_bag = bag.predict(X[test_index])
         ada = AdaBoostClassifier(n_estimators=100, random_state=True).fit(X[train_index],y[train_index])
         y_pred_ada = ada.predict(X[test_index])
-        media_het+= accuracy_score(y[test_index], y_pred_het)
-        media_ada+= accuracy_score(y[test_index], y_pred_ada)
-        media_bag+= accuracy_score(y[test_index], y_pred_bag)
-    media_het = media_het/10
-    media_ada = media_ada/10
-    media_bag = media_bag/10
-    print("---- Resultados de presicion para el dataset : ",Dataset.name," --------" )
-    print("Estimador : Bagging, Presicion: ",media_bag)
-    print("Estimador : Adaboost, Presicion: ",media_ada)
-    print("Estimador : Heterogeneo, Presicion: ",media_het)
+        rand = RandomForestClassifier(n_estimators=100 , max_depth=5, bootstrap=True).fit(X,y)
+        y_pred_rand = rand.predict(X[test_index])
+        
+        metrics(y[test_index], y_pred_het, Lista_het)
+        metrics(y[test_index], y_pred_bag, Lista_homo)
+        metrics(y[test_index], y_pred_ada, Lista_ada)
+        metrics(y[test_index], y_pred_rand, Lista_rand)
+    heter = media_desvia(Lista_het)
+    homo = media_desvia(Lista_homo)
+    adab = media_desvia(Lista_ada)
+    rando = media_desvia(Lista_rand)
+    print("--- Dataset: ", Dataset.name)
+    print("metricas heterogeneo: medias:", heter.media()," desviaciones estandar: ", heter.desviacion()) 
+    print("metricas homogeneo: medias:", homo.media()," desviaciones estandar: ", homo.desviacion()) 
+    print("metricas adaboost: medias:", adab.media()," desviaciones estandar: ", adab.desviacion()) 
+    print("metricas random forrest: medias:", rando.media()," desviaciones estandar: ", rando.desviacion()) 
+
