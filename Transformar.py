@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import mode
-from sklearn.metrics import accuracy_score, recall_score, f1_score,precision_score
+from sklearn.metrics import accuracy_score, recall_score, f1_score,precision_score, classification_report
+from imblearn.metrics import sensitivity_score
 from prueba2 import media_desvia
 from sklearn.model_selection import KFold
 #se importan todos los estimadores
@@ -43,10 +44,9 @@ def load_creado(datos):
 
 def metrics(y_true, y_pred, Lista):
     Lista[0].append(accuracy_score(y_true, y_pred))
-    Lista[1].append(recall_score(y_true,y_pred, zero_division=0,average="macro"))
-    Lista[2].append(f1_score(y_true,y_pred, zero_division=0, average="macro"))
-    Lista[3].append(precision_score(y_true, y_pred, zero_division=0, average="macro"))
-
+    Lista[1].append(recall_score(y_true,y_pred, zero_division=0,average=None))
+    Lista[2].append(f1_score(y_true,y_pred, zero_division=0, average=None))
+    Lista[3].append(precision_score(y_true, y_pred, zero_division=0, average=None))
 #todos los datasets, con la direccion de la clase
 def Datasets():
     datasets =[]
@@ -90,11 +90,12 @@ for Dataset in Datasets():
         y_pred_ada = ada.predict(X[test_index])
         rand = RandomForestClassifier(n_estimators=100 , max_depth=5, bootstrap=True).fit(X,y)
         y_pred_rand = rand.predict(X[test_index])
-        
+
         metrics(y[test_index], y_pred_het, Lista_het)
         metrics(y[test_index], y_pred_bag, Lista_homo)
         metrics(y[test_index], y_pred_ada, Lista_ada)
         metrics(y[test_index], y_pred_rand, Lista_rand)
+        print(classification_report(y[test_index], y_pred_rand, zero_division=0))
     heter = media_desvia(Lista_het)
     homo = media_desvia(Lista_homo)
     adab = media_desvia(Lista_ada)
