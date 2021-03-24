@@ -85,7 +85,7 @@ metaestimadores = [
 ]
     
 #kf = KFold(n_splits=10)
-kf = StratifiedShuffleSplit(n_splits=10, test_size=0.9, random_state=1)
+kf = StratifiedShuffleSplit(n_splits=10, test_size=0.1, random_state=1)
 for Dataset in Datasets():
     X,y = load_creado(Dataset)
     res = open(f"Resultados/{Dataset.name}.csv", "w")
