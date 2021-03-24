@@ -16,6 +16,7 @@ from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import VotingClassifier
 #sirve para partir los datos entre datos de prueba, y de entrenamiento
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -77,7 +78,7 @@ estimadores = [
     ('gnb', GaussianNB())]
 
 metaestimadores = [
-    [Heterogeneo(estimadores), "Heterogeneo"],
+    [VotingClassifier(estimadores), "Heterogeneo"],
     [BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100), "Bagging"],
     [AdaBoostClassifier(n_estimators=100, random_state=True), "AdaBoost"],
     [RandomForestClassifier(n_estimators=100 , max_depth=5, bootstrap=True), "RandomForest"]
