@@ -28,7 +28,7 @@ class datas:
         self.clas = clas
         self.name = name
 
-    
+   
 #crea los ensambles homogeneos
 def ensambles_homogeneos(Estimador_Base, cantidad):
     estimadores = [Estimador_Base for i in range(cantidad)]
@@ -42,16 +42,19 @@ def load_creado(datos):
     X = np.array([[vector[i] for i in range(len(vector)) if i != datos.clas] for vector in X])
     return X,y
 
-def metrics(y_true, y_pred, Lista):
-    Lista[0].append(accuracy_score(y_true, y_pred))
-    Lista[1].append(recall_score(y_true,y_pred, zero_division=0,average=None))
-    Lista[2].append(f1_score(y_true,y_pred, zero_division=0, average=None))
-    Lista[3].append(precision_score(y_true, y_pred, zero_division=0, average=None))
+def metrics(y_true, y_pred, estimador, datos):
+    rc = recall_score(y_true,y_pred, zero_division=0,average=None)
+    #rc = np.append(rc, 0)
+    f1 = f1_score(y_true,y_pred, zero_division=0, average=None)
+    #f1 = np.append(f1, 0)
+    p = precision_score(y_true, y_pred, zero_division=0, average=None)
+    #p = np.append(rc, 0)
+    return f"{estimador},{datos},{accuracy_score(y_true, y_pred)},{rc[0]},{rc[1]},{f1[0]},{f1[1]},{p[0]},{p[1]}\n"
 #todos los datasets, con la direccion de la clase
 def Datasets():
     datasets =[]
     datasets.append(datas("Datasets/bupa.data",6,"Liver disorders"))
-    datasets.append(datas("Datasets/diabetic_retinopathy_debrecen.txt", 0,"Diabetic retinopathy from U. of Debrecen"))
+    datasets.append(datas("Datasets/diabetic_retinopathy_debrecen.txt", 1,"Diabetic retinopathy from U. of Debrecen"))
     datasets.append(datas("Datasets/fertility_Diagnosis2.txt", 9,"Fertility"))
     datasets.append(datas("Datasets/haberman.data", 3,"Haberman’s survival after surgery for breast cancer"))
     datasets.append(datas("Datasets/heart.txt", 13,"Statlog heart disease"))
@@ -63,7 +66,7 @@ def Datasets():
     datasets.append(datas("Datasets/wdbcOriginal.txt",1,"Breast cancer Wisconsin original"))
     datasets.append(datas("Datasets/wdbcPredictions.txt",1,"Breast cancer Wisconsin prognostic"))
     datasets.append(datas("Datasets/chronic_kidney_disease.txt",24,"Chronic kidney disease"))
-    datasets.append(datas("Datasets/parkinsons.data",0, "Oxford Parkinson’s disease detection"))
+    datasets.append(datas("Datasets/parkinsons.data",17, "Oxford Parkinson’s disease detection"))
     return datasets
 
 #Carga todos los estimadores, en una lista
@@ -72,37 +75,25 @@ estimadores = [
     ('svm', SVC(gamma=1.0, C=1.0, probability=True)),
     ('3nn',KNeighborsClassifier(n_neighbors=3)),
     ('gnb', GaussianNB())]
+
+metaestimadores = [
+    [Heterogeneo(estimadores), "Heterogeneo"],
+    [BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100), "Bagging"],
+    [AdaBoostClassifier(n_estimators=100, random_state=True), "AdaBoost"],
+    [RandomForestClassifier(n_estimators=100 , max_depth=5, bootstrap=True), "RandomForest"]
+]
     
-kf = KFold(n_splits=10)
-#kf = StratifiedShuffleSplit(n_splits=10, test_size=0.9, random_state=1)
+#kf = KFold(n_splits=10)
+kf = StratifiedShuffleSplit(n_splits=10, test_size=0.9, random_state=1)
 for Dataset in Datasets():
     X,y = load_creado(Dataset)
-    Lista_het = [[],[],[],[]]
-    Lista_homo = [[],[],[],[]]
-    Lista_ada = [[],[],[],[]]
-    Lista_rand = [[],[],[],[]]
-    for train_index, test_index in kf.split(X,y):
-        het = Heterogeneo(estimadores).fit(X[train_index],y[train_index])
-        y_pred_het = het.predict(X[test_index])
-        bag = BaggingClassifier(base_estimator=KNeighborsClassifier(n_neighbors=3), n_estimators=100).fit(X[train_index],y[train_index])
-        y_pred_bag = bag.predict(X[test_index])
-        ada = AdaBoostClassifier(n_estimators=100, random_state=True).fit(X[train_index],y[train_index])
-        y_pred_ada = ada.predict(X[test_index])
-        rand = RandomForestClassifier(n_estimators=100 , max_depth=5, bootstrap=True).fit(X,y)
-        y_pred_rand = rand.predict(X[test_index])
-
-        metrics(y[test_index], y_pred_het, Lista_het)
-        metrics(y[test_index], y_pred_bag, Lista_homo)
-        metrics(y[test_index], y_pred_ada, Lista_ada)
-        metrics(y[test_index], y_pred_rand, Lista_rand)
-        print(classification_report(y[test_index], y_pred_rand, zero_division=0))
-    heter = media_desvia(Lista_het)
-    homo = media_desvia(Lista_homo)
-    adab = media_desvia(Lista_ada)
-    rando = media_desvia(Lista_rand)
-    print("--- Dataset: ", Dataset.name)
-    print("metricas heterogeneo: medias:", heter.media()," desviaciones estandar: ", heter.desviacion()) 
-    print("metricas homogeneo: medias:", homo.media()," desviaciones estandar: ", homo.desviacion()) 
-    print("metricas adaboost: medias:", adab.media()," desviaciones estandar: ", adab.desviacion()) 
-    print("metricas random forrest: medias:", rando.media()," desviaciones estandar: ", rando.desviacion()) 
-
+    res = open(f"Resultados/{Dataset.name}.csv", "w")
+    res.write(f"Estimador,Datos,Accuracy_score,recall_score_1,recall_score_2,f1_score_1,f1_score_2,precision_score_1,precision_score_2\n")
+    for meta in metaestimadores:
+        for train_index, test_index in kf.split(X,y):
+            meta[0].fit(X[train_index],y[train_index])
+            train = meta[0].predict(X[train_index])
+            res.write(metrics(y[train_index], train, meta[1], "Entrenamiento"))
+            test = meta[0].predict(X[test_index])
+            res.write(metrics(y[test_index], test, meta[1], "Prueba"))
+    res.close()
