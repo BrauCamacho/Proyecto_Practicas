@@ -56,20 +56,20 @@ def metrics(y_true, y_pred, estimador, datos):
 #todos los datasets, con la direccion de la clase
 def Datasets():
     datasets =[]
-    datasets.append(datas("Datasets/bupa.data",6,"Liver disorders"))
-    datasets.append(datas("Datasets/diabetic_retinopathy_debrecen.txt", 1,"Diabetic retinopathy from U. of Debrecen"))
+    datasets.append(datas("Datasets/bupa.data",6,"Liver"))
+    datasets.append(datas("Datasets/diabetic_retinopathy_debrecen.txt", 1,"DR"))
     datasets.append(datas("Datasets/fertility_Diagnosis2.txt", 9,"Fertility"))
-    datasets.append(datas("Datasets/haberman.data", 3,"Haberman’s survival after surgery for breast cancer"))
-    datasets.append(datas("Datasets/heart.txt", 13,"Statlog heart disease"))
-    datasets.append(datas("Datasets/LSTV.txt", 310,"LSVT voice rehabilitation"))
-    datasets.append(datas("Datasets/ThoraricSurgery.txt",16,"Thoracic surgery survival after surgery for lung cancer"))
-    datasets.append(datas("Datasets/vertebral_column.txt",6,"Vertebral column"))
-    datasets.append(datas("Datasets/train_data.txt",28,"Parkinson speech"))
-    datasets.append(datas("Datasets/wdbc.txt",1,"Breast cancer Wisconsin diagnostic"))
-    datasets.append(datas("Datasets/wdbcOriginal.txt",1,"Breast cancer Wisconsin original"))
-    datasets.append(datas("Datasets/wdbcPredictions.txt",1,"Breast cancer Wisconsin prognostic"))
-    datasets.append(datas("Datasets/chronic_kidney_disease.txt",24,"Chronic kidney disease"))
-    datasets.append(datas("Datasets/parkinsons.data",17, "Oxford Parkinson’s disease detection"))
+    datasets.append(datas("Datasets/haberman.data", 3,"HBCS"))
+    datasets.append(datas("Datasets/heart.txt", 13,"SHD"))
+    datasets.append(datas("Datasets/LSTV.txt", 310,"VR"))
+    datasets.append(datas("Datasets/ThoraricSurgery.txt",16,"TLCS"))
+    datasets.append(datas("Datasets/vertebral_column.txt",6,"VC"))
+    datasets.append(datas("Datasets/train_data.txt",28,"Parkinson1"))
+    datasets.append(datas("Datasets/wdbc.txt",1,"BCWD"))
+    datasets.append(datas("Datasets/wdbcOriginal.txt",1,"BCWO"))
+    datasets.append(datas("Datasets/wdbcPredictions.txt",1,"BCWP"))
+    datasets.append(datas("Datasets/chronic_kidney_disease.txt",24,"Kidney"))
+    datasets.append(datas("Datasets/parkinsons.data",17, "Parkinson2"))
     return datasets
 
 #Carga todos los estimadores, en una lista
