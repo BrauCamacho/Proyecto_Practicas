@@ -64,14 +64,14 @@ def Datasets():
     datasets.append(datas("Datasets/LSTV.txt", 310,"VR"))
     datasets.append(datas("Datasets/ThoraricSurgery.txt",16,"TLCS"))
     datasets.append(datas("Datasets/vertebral_column.txt",6,"VC"))
-    datasets.append(datas("Datasets/train_data.txt",28,"Parkinson1"))
-    datasets.append(datas("Datasets/wdbc.txt",1,"BCWD"))
-    datasets.append(datas("Datasets/wdbcOriginal.txt",1,"BCWO"))
-    datasets.append(datas("Datasets/wdbcPredictions.txt",1,"BCWP"))
+    datasets.append(datas("Datasets/train_data.txt",26,"Parkinson1"))
+    datasets.append(datas("Datasets/wdbc.txt",0,"BCWD"))
+    datasets.append(datas("Datasets/BCWO.txt",9,"BCWO"))
+    datasets.append(datas("Datasets/BCWP.txt",0,"BCWP"))
     datasets.append(datas("Datasets/chronic_kidney_disease.txt",24,"Kidney"))
-    datasets.append(datas("Datasets/parkinsons.data",17, "Parkinson2"))
+    datasets.append(datas("Datasets/parkinsons.txt",16, "Parkinson2"))
     return datasets
-
+'''
 #Carga todos los estimadores, en una lista
 estimadores = [
     ('dt',DecisionTreeClassifier(max_depth=5)),
@@ -103,3 +103,4 @@ for Dataset in Datasets():
             test = meta[0].predict(X[test_index])
             res.write(metrics(y[test_index], test, meta[1], "Prueba"))
     res.close()
+    '''
