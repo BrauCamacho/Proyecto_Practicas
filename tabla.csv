@@ -1,6 +1,6 @@
 Dataset,Instancias,Caracteristicas,Positivos,Negativos
 Liver,345,6,200,145
-DR,1151,19,1057,94
+DR,1151,19,611,540
 Fertility,100,9,12,88
 HBCS,306,3,81,225
 SHD,270,13,120,150
